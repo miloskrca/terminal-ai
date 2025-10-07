@@ -1,6 +1,8 @@
 # Terminal AI
 
-Natural-language assistant for generating and running terminal commands.
+Talk to your shell like it’s a teammate. Terminal AI turns plain-language requests
+(“kill anything on port 3000”) into safe shell commands, explains what it’s doing,
+and can execute it for you.
 
 ## Editable install
 
