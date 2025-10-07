@@ -32,12 +32,6 @@ tmpdir=$(mktemp -d) && \
   rm -rf "$tmpdir"
 ```
 
-Distribute `terminal_ai_cli.pyz` together with the runtime requirement:
-
-```
-pip install httpx
-```
-
 ## Shell aliases
 
 ### zsh / bash

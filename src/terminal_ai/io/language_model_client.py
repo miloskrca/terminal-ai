@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
+import json
+import urllib.error
+import urllib.request
 from dataclasses import dataclass
 from typing import Protocol
-
-try:
-    import httpx
-except ModuleNotFoundError:  # pragma: no cover - dependency is optional in tests
-    httpx = None  # type: ignore[assignment]
 
 
 class LanguageModelClient(Protocol):
@@ -33,13 +31,6 @@ class OpenAIChatClient:
     base_url: str = "https://api.openai.com/v1"
     timeout: float = 30.0
 
-    def __post_init__(self) -> None:
-        if httpx is None:  # pragma: no cover - exercised only when dependency missing
-            raise RuntimeError(
-                "httpx is required for OpenAIChatClient. Install dependencies with"
-                " `pip install -r requirements.txt` or add httpx manually."
-            )
-
     def complete(
         self,
         *,
@@ -47,24 +38,39 @@ class OpenAIChatClient:
         user_prompt: str,
         temperature: float = 0.0,
     ) -> str:
-        response = httpx.post(  # type: ignore[operator]
-            f"{self.base_url}/chat/completions",
-            headers={
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json",
-            },
-            json={
+        payload = json.dumps(
+            {
                 "model": self.model,
                 "temperature": temperature,
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
                 ],
+            }
+        ).encode("utf-8")
+
+        request = urllib.request.Request(
+            f"{self.base_url}/chat/completions",
+            data=payload,
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
             },
-            timeout=self.timeout,
+            method="POST",
         )
-        response.raise_for_status()
-        data = response.json()
+
+        try:
+            with urllib.request.urlopen(request, timeout=self.timeout) as response:  # type: ignore[arg-type]
+                raw_body = response.read()
+        except urllib.error.HTTPError as exc:  # pragma: no cover - network path
+            detail = exc.read().decode("utf-8", "ignore") if hasattr(exc, "read") else ""
+            raise RuntimeError(
+                f"OpenAI API error: {exc.code} {exc.reason}. {detail}".strip()
+            ) from exc
+        except urllib.error.URLError as exc:  # pragma: no cover - network path
+            raise RuntimeError(f"Failed to reach OpenAI API: {exc.reason if hasattr(exc, 'reason') else exc}") from exc
+
+        data = json.loads(raw_body.decode("utf-8"))
         try:
             message = data["choices"][0]["message"]["content"]
         except (KeyError, IndexError) as exc:  # pragma: no cover - API contract change
