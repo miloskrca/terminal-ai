@@ -1,0 +1,53 @@
+# Virtual environment
+.venv/
+
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging
+*.egg-info/
+*.egg
+*.whl
+dist/
+build/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.DS_Store
+
+# Test coverage reports
+.coverage
+htmlcov/
+.cache/
+
+# Pytest cache
+.pytest_cache/
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Environment variables
+.env
+.env.*
+
+# Generated prompts and examples
+prompts/generated/
+examples/generated/
+
+# Sandbox experiments
+sandbox/
+
+# Linting and formatting artifacts
+*.ruff_cache
+*.mypy_cache
+.black_cache/
+
+# Dependency lock files (if not committed)
+poetry.lock
+pipfile.lock
