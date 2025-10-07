@@ -51,3 +51,6 @@ sandbox/
 # Dependency lock files (if not committed)
 poetry.lock
 pipfile.lock
+
+# Ignore the zipapp output
+terminal_ai_cli.pyz
