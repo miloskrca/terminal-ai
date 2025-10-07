@@ -20,6 +20,7 @@ class LanguageModelClient(Protocol):
         temperature: float = 0.0,
     ) -> str:
         """Return the text completion for the provided prompts."""
+        ...
 
 
 @dataclass(slots=True)
@@ -71,8 +72,12 @@ class OpenAIChatClient:
             raise RuntimeError(f"Failed to reach OpenAI API: {exc.reason if hasattr(exc, 'reason') else exc}") from exc
 
         data = json.loads(raw_body.decode("utf-8"))
+
         try:
-            message = data["choices"][0]["message"]["content"]
+            raw_message = data["choices"][0]["message"]["content"]
         except (KeyError, IndexError) as exc:  # pragma: no cover - API contract change
             raise RuntimeError("Unexpected response from OpenAI API") from exc
-        return message.strip()
+
+        if not isinstance(raw_message, str):
+            raise RuntimeError("OpenAI API returned non-text content")
+        return raw_message.strip()
